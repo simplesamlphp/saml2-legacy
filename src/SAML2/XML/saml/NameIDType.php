@@ -14,6 +14,7 @@ use DOMElement;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
 use Serializable;
+use JsonSerializable;
 
 abstract class NameIDType implements Serializable, \JsonSerializable
 {
