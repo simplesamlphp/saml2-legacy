@@ -281,6 +281,13 @@ abstract class NameIDType implements Serializable, \JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return get_object_vars($this);
+        return [
+            'NameQualifier' => $this->getNameQualifier(),
+            'SPNameQualifier' => $this->getSPNameQualifier(),
+            'nodeName' => $this->nodeName,
+            'Format' => $this->Format,
+            'SPProvidedID' => $this->SPProvidedID,
+            'value' => $this->value
+        ];
     }
 }
