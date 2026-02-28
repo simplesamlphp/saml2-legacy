@@ -17,7 +17,7 @@ class SubjectConfirmationDataTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         $subjectConfirmationData = new SubjectConfirmationData();
         $subjectConfirmationData->setNotBefore(987654321);
@@ -34,6 +34,7 @@ class SubjectConfirmationDataTest extends \PHPUnit\Framework\TestCase
             '//saml_assertion:SubjectConfirmationData'
         );
         $this->assertCount(1, $subjectConfirmationDataElements);
+        /** @var \DOMElement $subjectConfirmationDataElement */
         $subjectConfirmationDataElement = $subjectConfirmationDataElements[0];
 
         $this->assertEquals('2001-04-19T04:25:21Z', $subjectConfirmationDataElement->getAttribute("NotBefore"));
@@ -47,7 +48,7 @@ class SubjectConfirmationDataTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testUnmarshalling() : void
+    public function testUnmarshalling(): void
     {
         $samlNamespace = Constants::NS_SAML;
         $document = DOMDocumentFactory::fromString(<<<XML

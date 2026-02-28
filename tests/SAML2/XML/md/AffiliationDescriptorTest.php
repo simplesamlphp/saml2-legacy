@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SAML2\XML\md;
 
+use Exception;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\AffiliationDescriptor;
@@ -14,7 +15,7 @@ class AffiliationDescriptorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         $document = DOMDocumentFactory::fromString('<root />');
 
@@ -33,6 +34,7 @@ class AffiliationDescriptorTest extends \PHPUnit\Framework\TestCase
 
         $affiliationDescriptorElement = $affiliationDescriptorElement->toXML($document->firstChild);
 
+        /** @var \DOMElement[] $affiliationDescriptorElements */
         $affiliationDescriptorElements = Utils::xpQuery(
             $affiliationDescriptorElement,
             '/root/saml_metadata:AffiliationDescriptor'
@@ -55,7 +57,7 @@ class AffiliationDescriptorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testUnmarshalling() : void
+    public function testUnmarshalling(): void
     {
         $mdNamespace = Constants::NS_MD;
         $document = DOMDocumentFactory::fromString(<<<XML
@@ -81,16 +83,16 @@ XML
     /**
      * @return void
      */
-    public function testUnmarshallingWithoutMembers() : void
+    public function testUnmarshallingWithoutMembers(): void
     {
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <md:AffiliationDescriptor xmlns:md="{$mdNamespace}" affiliationOwnerID="TheOwner" ID="TheID" validUntil="2009-02-13T23:31:30Z" cacheDuration="PT5000S">
 </md:AffiliationDescriptor>
 XML
         );
-        $this->expectException(\Exception::class, 'Missing AffiliateMember in AffiliationDescriptor.');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing AffiliateMember in AffiliationDescriptor.');
         new AffiliationDescriptor($document->firstChild);
     }
 
@@ -98,7 +100,7 @@ XML
     /**
      * @return void
      */
-    public function testUnmarshallingWithoutOwner() : void
+    public function testUnmarshallingWithoutOwner(): void
     {
         $mdNamespace = Constants::NS_MD;
         $document = DOMDocumentFactory::fromString(
@@ -110,7 +112,8 @@ XML
 XML
         );
 
-        $this->expectException(\Exception::class, 'Missing affiliationOwnerID on AffiliationDescriptor.');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing affiliationOwnerID on AffiliationDescriptor.');
         new AffiliationDescriptor($document->firstChild);
     }
 }

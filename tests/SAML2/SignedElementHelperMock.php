@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SAML2;
 
 use DOMElement;
-
 use SAML2\SignedElementHelper;
 use SAML2\DOMDocumentFactory;
 
@@ -14,10 +13,8 @@ use SAML2\DOMDocumentFactory;
  */
 class SignedElementHelperMock extends SignedElementHelper
 {
-    /**
-     * @param \DOMElement $xml
-     */
-    public function __construct(\DOMElement $xml = null)
+    /** @param \DOMElement|null $xml */
+    public function __construct(?DOMElement $xml = null)
     {
         parent::__construct($xml);
     }
@@ -26,7 +23,7 @@ class SignedElementHelperMock extends SignedElementHelper
     /**
      * @return \DOMElement
      */
-    public function toSignedXML() : DOMElement
+    public function toSignedXML(): DOMElement
     {
         $doc = DOMDocumentFactory::create();
         $root = $doc->createElement('root');

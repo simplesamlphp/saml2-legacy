@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SAML2;
 
+use DOMDocument;
+use Exception;
 use SAML2\Assertion;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
@@ -21,7 +23,7 @@ class AssertionTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
     /**
      * Test to build a basic assertion
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -63,7 +65,7 @@ class AssertionTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
     /**
      * Test to parse a basic assertion
      */
-    public function testUnmarshalling() : void
+    public function testUnmarshalling(): void
     {
         // Unmarshall an assertion
         $xml = <<<XML
@@ -111,7 +113,7 @@ XML;
     /**
      * Test an assertion with lots of options
      */
-    public function testMarshallingUnmarshallingChristmas() : void
+    public function testMarshallingUnmarshallingChristmas(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -179,7 +181,7 @@ XML;
     /**
      * Test an assertion attribute value types options
      */
-    public function testMarshallingUnmarshallingAttributeValTypes() : void
+    public function testMarshallingUnmarshallingAttributeValTypes(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -247,7 +249,7 @@ XML;
      * Test attribute value types check in Marshalling an assertion.
      */
 
-    public function testMarshallingWrongAttributeValTypes() : void
+    public function testMarshallingWrongAttributeValTypes(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -276,7 +278,8 @@ XML;
             "name3" => "xs:decimal"
         ]);
 
-        $this->expectException(\Exception::class, "Array of value types and array of values have different size for attribute 'name1'");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Array of value types and array of values have different size for attribute 'name1'");
         $assertionElement = $assertion->toXML()->ownerDocument->saveXML();
     }
 
@@ -284,7 +287,7 @@ XML;
     /**
      * Test parsing AuthnContext elements Decl and ClassRef
      */
-    public function testAuthnContextDeclAndClassRef() : void
+    public function testAuthnContextDeclAndClassRef(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -323,7 +326,7 @@ XML;
     /**
      * Test parsing AuthnContext elements DeclRef and ClassRef
      */
-    public function testAuthnContextDeclRefAndClassRef() : void
+    public function testAuthnContextDeclRefAndClassRef(): void
     {
         // Try with unmarshalling
         $xml = <<<XML
@@ -354,7 +357,7 @@ XML;
     /**
      * Test setting an AuthnContextDecl chunk.
      */
-    public function testSetAuthnContextDecl() : void
+    public function testSetAuthnContextDecl(): void
     {
         $xml = <<<XML
 <samlac:AuthenticationContextDeclaration xmlns:samlac="urn:oasis:names:tc:SAML:2.0:ac">
@@ -371,17 +374,21 @@ XML;
         $documentParent  = DOMDocumentFactory::fromString("<root />");
         $assertionElement = $assertion->toXML($documentParent->firstChild);
 
+        /** @var \DOMElement[] $acElements */
         $acElements = Utils::xpQuery($assertionElement, './saml_assertion:AuthnStatement/saml_assertion:AuthnContext');
+
+        /** @var \DOMElement $firstChild */
+        $firstChild = $acElements[0]->firstChild;
         $this->assertCount(1, $acElements);
-        $this->assertEquals('samlac:AuthenticationContextDeclaration', $acElements[0]->firstChild->tagName);
-        $this->assertEquals('urn:oasis:names:tc:SAML:2.0:ac', $acElements[0]->firstChild->namespaceURI);
+        $this->assertEquals('samlac:AuthenticationContextDeclaration', $firstChild->tagName);
+        $this->assertEquals('urn:oasis:names:tc:SAML:2.0:ac', $firstChild->namespaceURI);
     }
 
 
     /**
      * @group Assertion
      */
-    public function testConvertIssuerToXML() : void
+    public function testConvertIssuerToXML(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -406,6 +413,7 @@ XML;
 
         $assertion->setIssuer($issuer);
         $xml = $assertion->toXML();
+        /** @var \DOMElement[] xml_issuer */
         $xml_issuer = Utils::xpQuery($xml, './saml_assertion:Issuer');
         $xml_issuer = $xml_issuer[0];
 
@@ -417,7 +425,7 @@ XML;
     }
 
 
-    public function testAuthnContextDeclAndRefConstraint() : void
+    public function testAuthnContextDeclAndRefConstraint(): void
     {
         $xml = <<<XML
 <samlac:AuthenticationContextDeclaration xmlns:samlac="urn:oasis:names:tc:SAML:2.0:ac">
@@ -431,7 +439,7 @@ XML;
         try {
             $assertion->setAuthnContextDecl(new Chunk($document->documentElement));
             $assertion->setAuthnContextDeclRef('/relative/path/to/document.xml');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
         $this->assertNotEmpty($e);
 
@@ -442,7 +450,7 @@ XML;
         try {
             $assertion->setAuthnContextDeclRef('/relative/path/to/document.xml');
             $assertion->setAuthnContextDecl(new Chunk($document->documentElement));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
         $this->assertNotEmpty($e);
 
@@ -472,7 +480,7 @@ XML;
         $e = null;
         try {
             new Assertion($document->documentElement);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
         $this->assertNotEmpty($e);
 
@@ -480,7 +488,7 @@ XML;
     }
 
 
-    public function testMustHaveClassRefOrDeclOrDeclRef() : void
+    public function testMustHaveClassRefOrDeclOrDeclRef(): void
     {
         // Unmarshall an assertion
         $document = DOMDocumentFactory::fromString(<<<XML
@@ -502,13 +510,13 @@ XML
         $e = null;
         try {
             $assertion = new Assertion($document->firstChild);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
         $this->assertNotEmpty($e);
     }
 
 
-    public function testGetSubjectConfirmationData() : void
+    public function testGetSubjectConfirmationData(): void
     {
         $document = DOMDocumentFactory::fromString(<<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -546,7 +554,7 @@ XML
      *
      * This tests against reintroduction of removed behavior.
      */
-    public function testNoAuthnContextDeclRefFallback() : void
+    public function testNoAuthnContextDeclRefFallback(): void
     {
         $authnContextDeclRef = 'relative/url/to/authcontext.xml';
 
@@ -573,9 +581,9 @@ XML
     }
 
 
-    public function testHasEncryptedAttributes() : void
+    public function testHasEncryptedAttributes(): void
     {
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->loadXML(<<<XML
     <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
                     Version="2.0"
@@ -637,9 +645,9 @@ XML
     }
 
 
-    public function testHasEncryptedAttributes2() : void
+    public function testHasEncryptedAttributes2(): void
     {
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->loadXML(<<<XML
     <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
                     Version="2.0"
@@ -685,9 +693,9 @@ XML
     /**
      * @group Assertion
      */
-    public function testCorrectSignatureMethodCanBeExtracted() : void
+    public function testCorrectSignatureMethodCanBeExtracted(): void
     {
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->loadXML(<<<XML
     <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
                     Version="2.0"
@@ -738,14 +746,13 @@ XML
 
         $signatureMethod = $signedAssertion->getSignatureMethod();
 
-        $this->assertEquals($privateKey->getAlgorith(), $signatureMethod);
+        $this->assertEquals($privateKey->getAlgorithm(), $signatureMethod);
 
         $this->assertTrue($signedAssertion->wasSignedAtConstruction());
-
     }
 
 
-    public function testEptiAttributeValuesAreParsedCorrectly() : void
+    public function testEptiAttributeValuesAreParsedCorrectly(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -794,7 +801,7 @@ XML;
     }
 
 
-    public function testEptiLegacyAttributeValuesCanBeString() : void
+    public function testEptiLegacyAttributeValuesCanBeString(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -862,7 +869,7 @@ XML;
      * as per http://software.internet2.edu/eduperson/internet2-mace-dir-eduperson-201310.html#eduPersonTargetedID
      * it is multivalued
      */
-    public function testEptiAttributeParsingSupportsMultipleValues() : void
+    public function testEptiAttributeParsingSupportsMultipleValues(): void
     {
         $xml
             = <<<XML
@@ -911,7 +918,7 @@ XML;
     }
 
 
-    public function testAttributeValuesWithComplexTypesAreParsedCorrectly() : void
+    public function testAttributeValuesWithComplexTypesAreParsedCorrectly(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -950,7 +957,7 @@ XML;
     }
 
 
-    public function testTypedAttributeValuesAreParsedCorrectly() : void
+    public function testTypedAttributeValuesAreParsedCorrectly(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -983,7 +990,7 @@ XML;
     }
 
 
-    public function testEncryptedAttributeValuesWithComplexTypeValuesAreParsedCorrectly() : void
+    public function testEncryptedAttributeValuesWithComplexTypeValuesAreParsedCorrectly(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -1035,7 +1042,7 @@ XML;
     }
 
 
-    public function testTypedEncryptedAttributeValuesAreParsedCorrectly() : void
+    public function testTypedEncryptedAttributeValuesAreParsedCorrectly(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -1082,9 +1089,9 @@ XML;
     /**
      * Try to verify a signed assertion.
      */
-    public function testVerifySignedAssertion() : void
+    public function testVerifySignedAssertion(): void
     {
-        $doc = new \DOMDocument();
+        $doc = new DOMDocument();
         $doc->load(__DIR__ . '/signedassertion.xml');
 
         $publicKey = CertificatesMock::getPublicKeySha256();
@@ -1114,9 +1121,9 @@ XML;
      * Make sure an assertion whose signature verifies cannot be tampered by using XML comments.
      * @see https://duo.com/labs/psa/duo-psa-2017-003
      */
-    public function testCommentsInSignedAssertion() : void
+    public function testCommentsInSignedAssertion(): void
     {
-        $doc = new \DOMDocument();
+        $doc = new DOMDocument();
         $doc->load(__DIR__ . '/signedassertion_with_comments.xml');
 
         $publicKey = CertificatesMock::getPublicKeySha256();
@@ -1133,14 +1140,15 @@ XML;
      * Try to verify a signed assertion in which a byte was changed after signing.
      * Must yield a validation exception.
      */
-    public function testVerifySignedAssertionChangedBody() : void
+    public function testVerifySignedAssertionChangedBody(): void
     {
-        $doc = new \DOMDocument();
+        $doc = new DOMDocument();
         $doc->load(__DIR__ . '/signedassertion_tampered.xml');
 
         $publicKey = CertificatesMock::getPublicKeySha256();
 
-        $this->expectException(\Exception::class, 'Reference validation failed');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference validation failed');
         $assertion = new Assertion($doc->firstChild);
     }
 
@@ -1149,15 +1157,16 @@ XML;
      * Try to verify a signed assertion with the wrong key.
      * Must yield a signature validation exception.
      */
-    public function testVerifySignedAssertionWrongKey() : void
+    public function testVerifySignedAssertionWrongKey(): void
     {
-        $doc = new \DOMDocument();
+        $doc = new DOMDocument();
         $doc->load(__DIR__ . '/signedassertion.xml');
 
         $publicKey = CertificatesMock::getPublicKey2Sha256();
 
         $assertion = new Assertion($doc->firstChild);
-        $this->expectException(\Exception::class, 'Unable to validate Signature');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to validate Signature');
         $assertion->validate($publicKey);
     }
 
@@ -1166,15 +1175,16 @@ XML;
      * Try to verify an assertion signed with RSA with a DSA public key.
      * Must yield a signature validation exception.
      */
-    public function testVerifySignedAssertionWrongKeyDSA() : void
+    public function testVerifySignedAssertionWrongKeyDSA(): void
     {
-        $doc = new \DOMDocument();
+        $doc = new DOMDocument();
         $doc->load(__DIR__ . '/signedassertion.xml');
 
         $publicKey = CertificatesMock::getPublicKeyDSAasRSA();
 
         $assertion = new Assertion($doc->firstChild);
-        $this->expectException(\Exception::class, 'Unable to validate Signature');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to validate Signature');
         $assertion->validate($publicKey);
     }
 
@@ -1183,7 +1193,7 @@ XML;
      * Calling validate on an unsigned assertion must return
      * false, not an exception.
      */
-    public function testVerifyUnsignedAssertion() : void
+    public function testVerifyUnsignedAssertion(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1222,7 +1232,7 @@ XML;
     /**
      * An assertion must always be version "2.0".
      */
-    public function testAssertionVersionOtherThan20ThrowsException() : void
+    public function testAssertionVersionOtherThan20ThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1247,7 +1257,8 @@ XML;
 </saml:Assertion>
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, 'Unsupported version: 1.3');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported version: 1.3');
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1255,7 +1266,7 @@ XML;
     /**
      * An assertion without an ID must throw an exception
      */
-    public function testAssertionWithoutIDthrowsException() : void
+    public function testAssertionWithoutIDthrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1279,7 +1290,8 @@ XML;
 </saml:Assertion>
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, 'Missing ID attribute on SAML assertion');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing ID attribute on SAML assertion');
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1287,7 +1299,7 @@ XML;
     /**
      * An assertion must always have an Issuer element.
      */
-    public function testAssertionWithoutIssuerThrowsException() : void
+    public function testAssertionWithoutIssuerThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1311,7 +1323,8 @@ XML;
 </saml:Assertion>
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, 'Missing <saml:Issuer> in assertion');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing <saml:Issuer> in assertion');
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1319,7 +1332,7 @@ XML;
     /**
      * More than one <saml:Subject> is not allowed in an Assertion.
      */
-    public function testMoreThanOneSubjectThrowsException() : void
+    public function testMoreThanOneSubjectThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1346,7 +1359,8 @@ XML;
 
         $document = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, 'More than one <saml:Subject> in <saml:Assertion>');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('More than one <saml:Subject> in <saml:Assertion>');
         $assertion = new Assertion($document->documentElement);
     }
 
@@ -1354,7 +1368,7 @@ XML;
     /**
      * No more than one NameID may be present in the Subject
      */
-    public function testMoreThanOneNameIDThrowsException() : void
+    public function testMoreThanOneNameIDThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1379,7 +1393,8 @@ XML;
 
         $document = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, 'More than one <saml:NameID> or <saml:EncryptedID> in <saml:Subject>');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('More than one <saml:NameID> or <saml:EncryptedID> in <saml:Subject>');
         $assertion = new Assertion($document->documentElement);
     }
 
@@ -1387,7 +1402,7 @@ XML;
     /**
      * A <saml:Subject> wtthout both NameID and SubjectConfirmation throws exception.
      */
-    public function testSubjectMustHaveNameIDorSubjectConfirmation() : void
+    public function testSubjectMustHaveNameIDorSubjectConfirmation(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1411,7 +1426,8 @@ XML;
 
         $document = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, 'Missing <saml:SubjectConfirmation> in <saml:Subject>');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing <saml:SubjectConfirmation> in <saml:Subject>');
         $assertion = new Assertion($document->documentElement);
     }
 
@@ -1419,7 +1435,7 @@ XML;
     /**
      * An Assertion may not have more than one <saml:Conditions>
      */
-    public function testTooManyConditionsThrowsException() : void
+    public function testTooManyConditionsThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1448,7 +1464,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, 'More than one <saml:Conditions> in <saml:Assertion>');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('More than one <saml:Conditions> in <saml:Assertion>');
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1456,7 +1473,7 @@ XML;
     /**
      * A Condition must be of namespace saml.
      */
-    public function testConditionWithUnknownNamespaceThrowsException() : void
+    public function testConditionWithUnknownNamespaceThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1482,7 +1499,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, 'Unknown namespace of condition:');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unknown namespace of condition:');
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1493,7 +1511,7 @@ XML;
      * - OneTimeUse and ProxyRestrictions must be accepted but are
      *   currently a no-op.
      */
-    public function testConditionAllowedTypes() : void
+    public function testConditionAllowedTypes(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1538,7 +1556,7 @@ XML;
      * Any Condition other than AudienceRestirction, OneTimeUse and
      * ProxyRestriction must throw an Exception.
      */
-    public function testUnkownThrowsException() : void
+    public function testUnkownThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1564,7 +1582,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "Unknown condition: 'OtherCondition'");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Unknown condition: 'OtherCondition'");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1572,7 +1591,7 @@ XML;
     /**
      * More than one AuthnStatement will throw Exception.
      */
-    public function testMoreThanOneAuthnStatementThrowsException() : void
+    public function testMoreThanOneAuthnStatementThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1597,7 +1616,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "More than one <saml:AuthnStatement> in <saml:Assertion> not supported");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("More than one <saml:AuthnStatement> in <saml:Assertion> not supported");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1606,7 +1626,7 @@ XML;
      * AuthnStatement must have AuthnInstant attribute, if missing
      * throw Exception.
      */
-    public function testMissingAuthnInstantThrowsException() : void
+    public function testMissingAuthnInstantThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1625,7 +1645,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "Missing required AuthnInstant attribute on <saml:AuthnStatement>");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Missing required AuthnInstant attribute on <saml:AuthnStatement>");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1633,7 +1654,7 @@ XML;
     /**
      * More than one AuthnContext inside AuthnStatement will throw Exception.
      */
-    public function testMoreThanOneAuthnContextThrowsException() : void
+    public function testMoreThanOneAuthnContextThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1656,7 +1677,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "More than one <saml:AuthnContext> in <saml:AuthnStatement>");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("More than one <saml:AuthnContext> in <saml:AuthnStatement>");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1664,7 +1686,7 @@ XML;
     /**
      * No AuthnContext inside AuthnStatement will throw Exception.
      */
-    public function testMissingAuthnContextThrowsException() : void
+    public function testMissingAuthnContextThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1679,7 +1701,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "Missing required <saml:AuthnContext> in <saml:AuthnStatement>");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Missing required <saml:AuthnContext> in <saml:AuthnStatement>");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1687,7 +1710,7 @@ XML;
     /**
      * More than one AuthnContextDeclRef inside AuthnContext will throw Exception.
      */
-    public function testMoreThanOneAuthnContextDeclRefThrowsException() : void
+    public function testMoreThanOneAuthnContextDeclRefThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1707,7 +1730,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "More than one <saml:AuthnContextDeclRef> found");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("More than one <saml:AuthnContextDeclRef> found");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1715,7 +1739,7 @@ XML;
     /**
      * More than one AuthnContextDecl inside AuthnContext will throw Exception.
      */
-    public function testMoreThanOneAuthnContextDeclThrowsException() : void
+    public function testMoreThanOneAuthnContextDeclThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1740,7 +1764,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "More than one <saml:AuthnContextDecl> found?");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("More than one <saml:AuthnContextDecl> found?");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1748,7 +1773,7 @@ XML;
     /**
      * More than one AuthnContextClassRef inside AuthnContext will throw Exception.
      */
-    public function testMoreThanOneAuthnContextClassRefThrowsException() : void
+    public function testMoreThanOneAuthnContextClassRefThrowsException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1768,7 +1793,8 @@ XML;
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
 
-        $this->expectException(\Exception::class, "More than one <saml:AuthnContextClassRef> in <saml:AuthnContext>");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("More than one <saml:AuthnContextClassRef> in <saml:AuthnContext>");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1776,9 +1802,9 @@ XML;
     /**
      * When an Attribute element has no name, exception is thrown.
      */
-    public function testMissingNameOnAttribute() : void
+    public function testMissingNameOnAttribute(): void
     {
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->loadXML(<<<XML
     <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
                     Version="2.0"
@@ -1797,7 +1823,8 @@ XML;
 XML
         );
 
-        $this->expectException(\Exception::class, "Missing name on <saml:Attribute> element");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Missing name on <saml:Attribute> element");
         $assertion = new Assertion($document->firstChild);
     }
 
@@ -1806,7 +1833,7 @@ XML
      * If this assertion mixes Attribute NameFormats, the AttributeNameFormat
      * of this assertion will be set to unspecified.
      */
-    public function testMixedAttributeNameFormats() : void
+    public function testMixedAttributeNameFormats(): void
     {
         $xml = <<<XML
             <saml:Assertion
@@ -1840,7 +1867,7 @@ XML;
     /**
      * Test basic NameID unmarshalling.
      */
-    public function testNameIDunmarshalling() : void
+    public function testNameIDunmarshalling(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1873,7 +1900,7 @@ XML;
 
         // Not encrypted, should be a no-op
         $privateKey = CertificatesMock::getPrivateKey();
-        $decrypted = $assertion->decryptNameId($privateKey);
+        $assertion->decryptNameId($privateKey);
         $this->assertEquals('b7de81420a19416', $nameID->getValue());
         $this->assertEquals('urn:oasis:names:tc:SAML:2.0:nameid-format:transient', $nameID->getFormat());
         $this->assertFalse($assertion->isNameIdEncrypted());
@@ -1883,7 +1910,7 @@ XML;
     /**
      * Test NameID Encryption and Decryption.
      */
-    public function testNameIdEncryption() : void
+    public function testNameIdEncryption(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -1924,7 +1951,7 @@ XML;
      * Test Exception when trying to get encrypted NameId without
      * decrypting it first.
      */
-    public function testRetrieveEncryptedNameIdException() : void
+    public function testRetrieveEncryptedNameIdException(): void
     {
         $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -1954,12 +1981,13 @@ XML;
         $document = DOMDocumentFactory::fromString($xml);
 
         $assertion = new Assertion($document->documentElement);
-        $this->expectException(\Exception::class, "Attempted to retrieve encrypted NameID without decrypting it first");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Attempted to retrieve encrypted NameID without decrypting it first");
         $assertion->getNameID();
     }
 
 
-    public function testMarshallingElementOrdering() : void
+    public function testMarshallingElementOrdering(): void
     {
         // Create an Issuer
         $issuer = new Issuer();
@@ -1985,10 +2013,13 @@ XML;
         $assertionElement = $assertion->toXML();
 
         // Test for an Issuer
+        /** @var \DOMElement[] $issuerElements */
         $issuerElements = Utils::xpQuery($assertionElement, './saml_assertion:Issuer');
         $this->assertCount(1, $issuerElements);
         $this->assertEquals('testIssuer', $issuerElements[0]->textContent);
+
         // Test ordering of Assertion contents
+        /** @var \DOMElement[] $assertionElements */
         $assertionElements = Utils::xpQuery($assertionElement, './saml_assertion:Issuer/following-sibling::*');
         $this->assertCount(5, $assertionElements);
         $this->assertEquals('ds:Signature', $assertionElements[0]->tagName);
@@ -2004,7 +2035,7 @@ XML;
      * Ensure that empty string attribues are output, and null attributes also but
      * with different type.
      */
-    public function testAttributeValueEmptyStringAndNull() : void
+    public function testAttributeValueEmptyStringAndNull(): void
     {
         // Create an assertion
         $assertion = new Assertion();

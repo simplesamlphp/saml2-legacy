@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SAML2;
 
+use Exception;
 use SAML2\Response;
 use SAML2\Utils;
 use SAML2\DOMDocumentFactory;
@@ -16,7 +17,7 @@ class StatusResponseTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         $response = new Response();
         $response->setStatus([
@@ -30,14 +31,17 @@ class StatusResponseTest extends \PHPUnit\Framework\TestCase
         $statusElements = Utils::xpQuery($responseElement, './saml_protocol:Status');
         $this->assertCount(1, $statusElements);
 
+        /** @var \DOMElement[] $statusCodeElements */
         $statusCodeElements = Utils::xpQuery($statusElements[0], './saml_protocol:StatusCode');
         $this->assertCount(1, $statusCodeElements);
         $this->assertEquals('OurStatusCode', $statusCodeElements[0]->getAttribute("Value"));
 
+        /** @var \DOMElement[] $nestedStatusCodeElements */
         $nestedStatusCodeElements = Utils::xpQuery($statusCodeElements[0], './saml_protocol:StatusCode');
         $this->assertCount(1, $nestedStatusCodeElements);
         $this->assertEquals('OurSubStatusCode', $nestedStatusCodeElements[0]->getAttribute("Value"));
 
+        /** @var \DOMElement[] $statusMessageElements */
         $statusMessageElements = Utils::xpQuery($statusElements[0], './saml_protocol:StatusMessage');
         $this->assertCount(1, $statusMessageElements);
         $this->assertEquals('OurMessageText', $statusMessageElements[0]->textContent);
@@ -47,7 +51,7 @@ class StatusResponseTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testUnmarshalling() : void
+    public function testUnmarshalling(): void
     {
         $xml = <<<XML
 <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -83,7 +87,7 @@ XML;
      * A status reponse that is not an error
      * @return void
      */
-    public function testStatusSuccess() : void
+    public function testStatusSuccess(): void
     {
         $xml = <<<XML
 <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -116,7 +120,7 @@ XML;
      * See if we can parse a StatusResponse with a subcode
      * @return void
      */
-    public function testStatusSubcode() : void
+    public function testStatusSubcode(): void
     {
         $xml = <<<XML
 <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -152,10 +156,11 @@ XML;
      * Test adding in-response-to to a status message.
      * @return void
      */
-    public function testResponseTo() : void
+    public function testResponseTo(): void
     {
         $response = new Response();
         $response->setIssueInstant(1453323439);
+        $response->setID('phpunit');
         $response->setStatus([
             'Code' => 'OurStatusCode'
         ]);
@@ -165,20 +170,11 @@ XML;
 
         $expectedStructureDocument = new \DOMDocument();
         $expectedStructureDocument->loadXML(<<<STATUSXML
-<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
-                xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-                ID="123"
-                Version="2.0"
-                IssueInstant="2016-01-20T20:57:19Z"
-                InResponseTo="aabb12234">
-  <samlp:Status>
-    <samlp:StatusCode Value="OurStatusCode"/>
-  </samlp:Status>
-</samlp:Response>
+<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="phpunit" Version="2.0" IssueInstant="2016-01-20T20:57:19Z" InResponseTo="aabb12234"><samlp:Status><samlp:StatusCode Value="OurStatusCode"/></samlp:Status></samlp:Response>
 STATUSXML
-       );
-       $expectedStructure = $expectedStructureDocument->documentElement;
-       $this->assertEqualXMLStructure($expectedStructure, $responseElement);
+        );
+        $expectedStructure = $expectedStructureDocument->documentElement;
+        $this->assertEquals($expectedStructure, $responseElement);
     }
 
 
@@ -186,9 +182,10 @@ STATUSXML
      * A response without any <Status> element throws exception
      * @return void
      */
-    public function testNoStatusElementThrowsException() : void
+    public function testNoStatusElementThrowsException(): void
     {
-        $this->expectException(\Exception::class, 'Missing status code on response');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing status code on response');
 
         $xml = <<<XML
 <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -219,9 +216,10 @@ XML;
      * StatusCode is required in a StatusResponse.
      * @return void
      */
-    public function testNoStatusCodeThrowsException() : void
+    public function testNoStatusCodeThrowsException(): void
     {
-        $this->expectException(\Exception::class, 'Missing status code in status element');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing status code in status element');
 
         $xml = <<<XML
 <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"

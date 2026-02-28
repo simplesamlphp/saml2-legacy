@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace SAML2\Certificate;
 
+use PHPUnit\Framework\Attributes\Test;
+
 class KeyCollectionTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 {
     /**
      * @group certificate
-     * @test
      * @return void
      */
-    public function testKeyCollectionAddWrongType() : void
+    #[Test]
+    public function testKeyCollectionAddWrongType(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $kc = new KeyCollection();

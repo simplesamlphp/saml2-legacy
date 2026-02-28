@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace SAML2;
 
+use Exception;
+use SAML2\Constants;
+use SAML2\DOMDocumentFactory;
 use SAML2\Message;
 use SAML2\Response;
-use SAML2\DOMDocumentFactory;
-use SAML2\XML\saml\Issuer;
-use SAML2\Constants;
 use SAML2\Utils;
+use SAML2\XML\saml\Issuer;
 
 class MessageTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 {
@@ -17,7 +18,7 @@ class MessageTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
      * @group Message
      * @return void
      */
-    public function testCorrectSignatureMethodCanBeExtractedFromAuthnRequest() : void
+    public function testCorrectSignatureMethodCanBeExtractedFromAuthnRequest(): void
     {
         $authnRequest = new \DOMDocument();
         $authnRequest->loadXML(<<<'AUTHNREQUEST'
@@ -53,7 +54,7 @@ AUTHNREQUEST
      * @group Message
      * @return void
      */
-    public function testIssuerParsedAsNameID() : void
+    public function testIssuerParsedAsNameID(): void
     {
         $authnRequest = new \DOMDocument();
         $authnRequest->loadXML(<<<'AUTHNREQUEST'
@@ -93,7 +94,7 @@ AUTHNREQUEST
      * @group Message
      * @return void
      */
-    public function testConvertIssuerToXML() : void
+    public function testConvertIssuerToXML(): void
     {
         // first, try with common Issuer objects (Format=entity)
         $response = new Response();
@@ -114,6 +115,8 @@ AUTHNREQUEST
         $issuer->setSPProvidedID('SomeSPProvidedID');
         $response->setIssuer($issuer);
         $xml = $response->toUnsignedXML();
+
+        /** @var \DOMElement[] $xml_issuer */
         $xml_issuer = Utils::xpQuery($xml, './saml_assertion:Issuer');
         $xml_issuer = $xml_issuer[0];
 
@@ -135,10 +138,10 @@ AUTHNREQUEST
      * @group Message
      * @return void
      */
-    public function testCorrectSignatureMethodCanBeExtractedFromResponse() : void
+    public function testCorrectSignatureMethodCanBeExtractedFromResponse(): void
     {
         $response = new \DOMDocument();
-        $response->load(__DIR__.'/Response/response.xml');
+        $response->load(__DIR__ . '/Response/response.xml');
 
         $privateKey = CertificatesMock::getPrivateKey();
 
@@ -154,10 +157,8 @@ AUTHNREQUEST
 
     /**
      * @group Message
-     * @covers \SAML2\Message::getExtensions()
-     * @return void
      */
-    public function testGetExtensions() : void
+    public function testGetExtensions(): void
     {
         $authnRequest = new \DOMDocument();
         $authnRequest->loadXML(<<<'AUTHNREQUEST'
@@ -187,7 +188,10 @@ AUTHNREQUEST
         );
 
         $message = Message::fromXML($authnRequest->documentElement);
+
+        /** @var \SAML2\XML\Chunk[] $exts */
         $exts = $message->getExtensions();
+
         $this->assertCount(2, $exts);
         $this->assertEquals("myextElt", $exts[0]->getLocalName());
         $this->assertEquals("example1", $exts[0]->getXML()->textContent);
@@ -197,10 +201,8 @@ AUTHNREQUEST
 
     /**
      * @group Message
-     * @covers \SAML2\Message::setExtensions()
-     * @return void
      */
-    public function testSetExtensions() : void
+    public function testSetExtensions(): void
     {
         $authnRequest = new \DOMDocument();
         $authnRequest->loadXML(<<<'AUTHNREQUEST'
@@ -235,6 +237,7 @@ AUTHNREQUEST
 
         $message->setExtensions($newexts);
 
+        /** @var \SAML2\XML\Chunk[] $exts */
         $exts = $message->getExtensions();
         $this->assertCount(1, $exts);
         $this->assertEquals("test", $exts[0]->getLocalName());
@@ -252,7 +255,7 @@ AUTHNREQUEST
      * @group Message
      * @return void
      */
-    public function testNamespaceMustBeProtocol() : void
+    public function testNamespaceMustBeProtocol(): void
     {
             $xml = <<<XML
 <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -264,7 +267,8 @@ AUTHNREQUEST
 </saml:Assertion>
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, "Unknown namespace of SAML message: 'urn:oasis:names:tc:SAML:2.0:assertion'");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Unknown namespace of SAML message: 'urn:oasis:names:tc:SAML:2.0:assertion'");
         $message = Message::fromXML($document->documentElement);
     }
 
@@ -273,7 +277,7 @@ XML;
      * @group Message
      * @return void
      */
-    public function testSAMLversionMustBe20() : void
+    public function testSAMLversionMustBe20(): void
     {
         $xml = <<<XML
 <samlp:LogoutResponse xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -292,7 +296,8 @@ XML;
 XML;
 
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, "Unsupported version: 2.1");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Unsupported version: 2.1");
         $message = Message::fromXML($document->documentElement);
     }
 
@@ -301,7 +306,7 @@ XML;
      * @group Message
      * @return void
      */
-    public function testMessageMustHaveID() : void
+    public function testMessageMustHaveID(): void
     {
         $xml = <<<XML
 <samlp:LogoutRequest
@@ -313,7 +318,8 @@ XML;
 </samlp:LogoutRequest>
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, "Missing ID attribute on SAML message.");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Missing ID attribute on SAML message.");
         $message = Message::fromXML($document->documentElement);
     }
 
@@ -323,7 +329,7 @@ XML;
      * @group Message
      * @return void
      */
-    public function testParseAttributeQuery() : void
+    public function testParseAttributeQuery(): void
     {
         $xml = <<<XML
 <samlp:AttributeQuery
@@ -357,6 +363,7 @@ XML;
         $this->assertEquals(Constants::CONSENT_PRIOR, $message->getConsent());
 
         $messageElement = $message->toUnsignedXML();
+        /** @var \DOMElement[] $xp */
         $xp = Utils::xpQuery($messageElement, '.');
         $this->assertEquals('somethingNEW', $xp[0]->getAttribute('ID'));
     }
@@ -366,7 +373,7 @@ XML;
      * @group Message
      * @return void
      */
-    public function testMessageTypeMustBeKnown() : void
+    public function testMessageTypeMustBeKnown(): void
     {
         $xml = <<<XML
 <samlp:MyFantasy
@@ -378,7 +385,8 @@ XML;
 </samlp:MyFantasy>
 XML;
         $document  = DOMDocumentFactory::fromString($xml);
-        $this->expectException(\Exception::class, "Unknown SAML message: 'MyFantasy'");
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Unknown SAML message: 'MyFantasy'");
         $message = Message::fromXML($document->documentElement);
     }
 }

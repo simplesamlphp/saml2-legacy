@@ -13,16 +13,16 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
  * @runTestsInSeparateProcesses
  * @package simplesamlphp\saml2
  */
-abstract class ControlledTimeTest extends MockeryTestCase
+abstract class ControlledTimeTestCase extends MockeryTestCase
 {
-    /** @var int */
-    protected $currentTime = 1;
+    protected int $currentTime = 1;
 
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $timing = \Mockery::mock('alias:\SAML2\Utilities\Temporal');
         $timing->shouldReceive('getTime')->andReturn($this->currentTime);
     }
 }
-

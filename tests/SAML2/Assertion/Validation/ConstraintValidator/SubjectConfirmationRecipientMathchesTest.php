@@ -4,44 +4,38 @@ declare(strict_types=1);
 
 namespace SAML2\Assertion\Validation\ConstraintValidator;
 
-use \SAML2\Assertion\Validation\ConstraintValidator\SubjectConfirmationRecipientMatches;
-use \SAML2\Assertion\Validation\ConstraintValidator\SubjectConfirmationResponseToMatches;
-use \SAML2\Assertion\Validation\Result;
-use \SAML2\Configuration\Destination;
-use \SAML2\XML\saml\SubjectConfirmationData;
-use \SAML2\XML\saml\SubjectConfirmationMatches;
+use PHPUnit\Framework\Attributes\Test;
+use SAML2\Assertion\Validation\ConstraintValidator\SubjectConfirmationRecipientMatches;
+use SAML2\Assertion\Validation\ConstraintValidator\SubjectConfirmationResponseToMatches;
+use SAML2\Assertion\Validation\Result;
+use SAML2\Configuration\Destination;
+use SAML2\XML\saml\SubjectConfirmation;
+use SAML2\XML\saml\SubjectConfirmationData;
+use SAML2\XML\saml\SubjectConfirmationMatches;
 
 class SubjectConfirmationRecipientMathchesTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 {
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $subjectConfirmation;
+    private SubjectConfirmation $subjectConfirmation;
 
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $subjectConfirmationData;
+    private SubjectConfirmationData $subjectConfirmationData;
 
 
     /**
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
-        $this->subjectConfirmation = new \SAML2\XML\saml\SubjectConfirmation();
-        $this->subjectConfirmationData = new \SAML2\XML\saml\SubjectConfirmationData();
+        $this->subjectConfirmation = new SubjectConfirmation();
+        $this->subjectConfirmationData = new SubjectConfirmationData();
         $this->subjectConfirmation->setSubjectConfirmationData($this->subjectConfirmationData);
     }
 
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function when_the_subject_confirmation_recipient_differs_from_the_destination_the_sc_is_invalid() : void
+    #[Test]
+    public function whenTheSubjectConfirmationRecipientDiffersFromTheDestinationTheScIsInvalid(): void
     {
         $this->subjectConfirmation->getSubjectConfirmationData()->setRecipient('someDestination');
 
@@ -59,10 +53,9 @@ class SubjectConfirmationRecipientMathchesTest extends \Mockery\Adapter\Phpunit\
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function when_the_subject_confirmation_recipient_equals_the_destination_the_sc_is_invalid() : void
+    #[Test]
+    public function whenTheSubjectConfirmationRecipientEqualsTheDestinationTheScIsInvalid(): void
     {
         $this->subjectConfirmation->getSubjectConfirmationData()->setRecipient('theSameDestination');
 

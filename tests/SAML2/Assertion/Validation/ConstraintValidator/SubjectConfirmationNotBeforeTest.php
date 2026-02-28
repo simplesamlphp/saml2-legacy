@@ -4,48 +4,44 @@ declare(strict_types=1);
 
 namespace SAML2\Assertion\Validation\ConstraintValidator;
 
+use PHPUnit\Framework\Attributes\Test;
 use SAML2\Assertion\Validation\ConstraintValidator\SubjectConfirmationNotBefore;
 use SAML2\Assertion\Validation\Result;
-use Test\SAML2\ControlledTimeTest;
+use SAML2\XML\saml\SubjectConfirmation;
+use SAML2\XML\saml\SubjectConfirmationData;
+use Test\SAML2\ControlledTimeTestCase;
 
 /**
  * Because we're mocking a static call, we have to run it in separate processes so as to no contaminate the other
  * tests.
  */
-class SubjectConfirmationNotBeforeTest extends ControlledTimeTest
+class SubjectConfirmationNotBeforeTest extends ControlledTimeTestCase
 {
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $subjectConfirmation;
+    private SubjectConfirmation $subjectConfirmation;
 
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $subjectConfirmationData;
+    private SubjectConfirmationData $subjectConfirmationData;
 
 
     /**
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
-        $this->subjectConfirmation = new \SAML2\XML\saml\SubjectConfirmation();
-        $this->subjectConfirmationData = new \SAML2\XML\saml\SubjectConfirmationData();
+
+        $this->subjectConfirmation = new SubjectConfirmation();
+        $this->subjectConfirmationData = new SubjectConfirmationData();
         $this->subjectConfirmation->setSubjectConfirmationData($this->subjectConfirmationData);
     }
 
 
     /**
      * @group assertion-validation
-     * @test
      *
-     * @runInSeparateProcess 
+     * @runInSeparateProcess
      * @preserveGlobalState disabled
-     * @return void
      */
-    public function timestamp_in_the_future_beyond_graceperiod_is_not_valid() : void
+    #[Test]
+    public function timestampInTheFutureBeyondGraceperiodIsNotValid(): void
     {
         $this->subjectConfirmation->getSubjectConfirmationData()->setNotBefore($this->currentTime + 61);
 
@@ -61,13 +57,12 @@ class SubjectConfirmationNotBeforeTest extends ControlledTimeTest
 
     /**
      * @group assertion-validation
-     * @test
      *
-     * @runInSeparateProcess 
+     * @runInSeparateProcess
      * @preserveGlobalState disabled
-     * @return void
      */
-    public function time_within_graceperiod_is_valid() : void
+    #[Test]
+    public function timeWithinGraceperiodIsValid(): void
     {
         $this->subjectConfirmation->getSubjectConfirmationData()->setNotBefore($this->currentTime + 60);
 
@@ -82,13 +77,12 @@ class SubjectConfirmationNotBeforeTest extends ControlledTimeTest
 
     /**
      * @group assertion-validation
-     * @test
      *
-     * @runInSeparateProcess 
+     * @runInSeparateProcess
      * @preserveGlobalState disabled
-     * @return void
      */
-    public function current_time_is_valid() : void
+    #[Test]
+    public function currentTimeIsValid(): void
     {
         $this->subjectConfirmation->getSubjectConfirmationData()->setNotBefore($this->currentTime);
 

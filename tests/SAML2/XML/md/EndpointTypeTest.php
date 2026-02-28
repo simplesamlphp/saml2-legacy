@@ -17,7 +17,7 @@ class EndpointTypeTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         $endpointType = new EndpointType();
         $endpointType->setBinding('TestBinding');
@@ -25,6 +25,8 @@ class EndpointTypeTest extends \PHPUnit\Framework\TestCase
 
         $document = DOMDocumentFactory::fromString('<root />');
         $endpointTypeElement = $endpointType->toXML($document->firstChild, 'md:Test');
+
+        /** @var \DOMElement[] $endpointTypeElements */
         $endpointTypeElements = Utils::xpQuery($endpointTypeElement, '/root/saml_metadata:Test');
 
         $this->assertCount(1, $endpointTypeElements);
@@ -39,6 +41,7 @@ class EndpointTypeTest extends \PHPUnit\Framework\TestCase
         $document->loadXML('<root />');
         $endpointTypeElement = $endpointType->toXML($document->firstChild, 'md:Test');
 
+        /** @var \DOMElement[] $endpointTypeElement */
         $endpointTypeElement = Utils::xpQuery($endpointTypeElement, '/root/saml_metadata:Test');
         $this->assertCount(1, $endpointTypeElement);
         $endpointTypeElement = $endpointTypeElement[0];
@@ -50,11 +53,10 @@ class EndpointTypeTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testUnmarshalling() : void
+    public function testUnmarshalling(): void
     {
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <md:Test xmlns:md="{$mdNamespace}" Binding="urn:something" Location="https://whatever/" xmlns:test="urn:test" test:attr="value" />
 XML
         );
@@ -73,6 +75,8 @@ XML
 
         $document->loadXML('<root />');
         $endpointTypeElement = $endpointType->toXML($document->firstChild, 'md:Test');
+
+        /** @var \DOMElement[] $endpointTypeElements */
         $endpointTypeElements = Utils::xpQuery($endpointTypeElement, '/root/saml_metadata:Test');
         $this->assertCount(1, $endpointTypeElements);
         $endpointTypeElement = $endpointTypeElements[0];

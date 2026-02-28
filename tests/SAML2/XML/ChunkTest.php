@@ -24,7 +24,7 @@ class ChunkTest extends \PHPUnit\Framework\TestCase
      * Make a new Chunk object to test with
      * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         $attribute = new Attribute();
         $attribute->setName('TheName');
@@ -46,13 +46,16 @@ class ChunkTest extends \PHPUnit\Framework\TestCase
      * Test serialization and unserialization
      * @return void
      */
-    public function testChunkSerializationLoop() : void
+    public function testChunkSerializationLoop(): void
     {
         $ser = $this->chunk->serialize();
         $document = DOMDocumentFactory::fromString('<root />');
         $newchunk = new Chunk($document->firstChild);
         $newchunk->unserialize($ser);
 
-        $this->assertEqualXMLStructure($this->chunk->getXML(), $newchunk->getXML());
+        $this->assertEquals(
+            $this->chunk->getXML()->ownerDocument->saveXML($this->chunk->getXML()),
+            $newchunk->getXML()->ownerDocument->saveXML($newchunk->getXML()),
+        );
     }
 }

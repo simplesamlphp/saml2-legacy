@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace SAML2\Certificate;
 
+use PHPUnit\Framework\Attributes\Test;
 use SAML2\Certificate\X509;
 
 class X509Test extends \PHPUnit\Framework\TestCase
 {
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function x509_certificate_contents_must_be_stripped_of_whitespace() : void
+    #[Test]
+    public function x509CertificateContentsMustBeStrippedOfWhitespace(): void
     {
         $toTest = [
             'X509Certificate' => ' Should   No Longer  Have Whitespaces'

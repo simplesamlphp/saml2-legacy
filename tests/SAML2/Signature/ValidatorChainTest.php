@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SAML2\Signature;
 
+use PHPUnit\Framework\Attributes\Test;
 use SAML2\Configuration\IdentityProvider;
 use SAML2\Signature\ValidatorChain;
 use SAML2\Response;
@@ -18,9 +19,8 @@ class ValidatorChainTest extends \PHPUnit\Framework\TestCase
 
 
     /**
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->chain = new ValidatorChain(new \Psr\Log\NullLogger(), []);
     }
@@ -28,10 +28,9 @@ class ValidatorChainTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @group signature
-     * @test
-     * @return void
      */
-    public function if_no_validators_can_validate_an_exception_is_thrown() : void
+    #[Test]
+    public function ifNoValidatorsCanValidateAnExceptionIsThrown(): void
     {
         $this->chain->appendValidator(new MockChainedValidator(false, true));
         $this->chain->appendValidator(new MockChainedValidator(false, true));
@@ -43,10 +42,9 @@ class ValidatorChainTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @group signature
-     * @test
-     * @return void
      */
-    public function all_registered_validators_should_be_tried() : void
+    #[Test]
+    public function allRegisteredValidatorsShouldBeTried(): void
     {
         $this->chain->appendValidator(new MockChainedValidator(false, true));
         $this->chain->appendValidator(new MockChainedValidator(false, true));
@@ -62,10 +60,9 @@ class ValidatorChainTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @group signature
-     * @test
-     * @return void
      */
-    public function it_uses_the_result_of_the_first_validator_that_can_validate() : void
+    #[Test]
+    public function itUsesTheResultOfTheFirstValidatorThatCanValidate(): void
     {
         $this->chain->appendValidator(new MockChainedValidator(false, true));
         $this->chain->appendValidator(new MockChainedValidator(true, false));

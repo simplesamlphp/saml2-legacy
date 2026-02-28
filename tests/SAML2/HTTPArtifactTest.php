@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SAML2;
 
+use Exception;
 use SAML2\HTTPArtifact;
 
 class HTTPArtifactTest extends \PHPUnit\Framework\TestCase
@@ -14,12 +15,13 @@ class HTTPArtifactTest extends \PHPUnit\Framework\TestCase
      * parameter is missing.
      * @return void
      */
-    public function testArtifactMissingUrlParamThrowsException() : void
+    public function testArtifactMissingUrlParamThrowsException(): void
     {
         $_REQUEST = ['a' => 'b', 'c' => 'd'];
 
         $ha = new HTTPArtifact();
-        $this->expectException(\Exception::class, 'Missing SAMLart parameter.');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing SAMLart parameter.');
         $request = $ha->receive();
     }
 }

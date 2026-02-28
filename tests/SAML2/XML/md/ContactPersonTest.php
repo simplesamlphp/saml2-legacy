@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SAML2\XML\md;
 
+use Exception;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\ContactPerson;
@@ -17,7 +18,7 @@ class ContactPersonTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testContactPerson() : void
+    public function testContactPerson(): void
     {
         $contactType = "other";
         $Company = "Test Company";
@@ -28,8 +29,7 @@ class ContactPersonTest extends \PHPUnit\Framework\TestCase
         $ContactPersonAttributes = ['testattr' => 'testval', 'testattr2' => 'testval2'];
 
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <md:Test xmlns:md="{$mdNamespace}" Binding="urn:something" Location="https://whatever/" xmlns:test="urn:test" test:attr="value">
 </md:Test>
 XML
@@ -123,10 +123,11 @@ XML
 
         $this->assertEquals(
             count($TelephoneNumber) + 1,
-            $contactPersonElement->getElementsByTagName('TelephoneNumber')->length
+            $contactPersonElement->getElementsByTagName('TelephoneNumber')->length,
         );
         foreach ($contactPersonElement->getElementsByTagName('TelephoneNumber') as $element) {
-            $this->assertTrue(in_array($element->nodeValue, $TelephoneNumber) ||
+            $this->assertTrue(
+                in_array($element->nodeValue, $TelephoneNumber) ||
                 $element->nodeValue === $MoreTelephoneNumber
             );
         }
@@ -140,11 +141,10 @@ XML
     /**
      * @return void
      */
-    public function testContactPersonFromXML() : void
+    public function testContactPersonFromXML(): void
     {
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <?xml version="1.0"?>
 <md:Test xmlns:md="{$mdNamespace}" xmlns:test="urn:test" Binding="urn:something" Location="https://whatever/" test:attr="value">
     <md:ContactPerson contactType="other" testattr="testval" testattr2="testval2">
@@ -175,11 +175,10 @@ XML
     /**
      * @return void
      */
-    public function testMultipleNamesXML() : void
+    public function testMultipleNamesXML(): void
     {
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <?xml version="1.0"?>
 <md:Test xmlns:md="{$mdNamespace}" xmlns:test="urn:test" Binding="urn:something" Location="https://whatever/" test:attr="value">
     <md:ContactPerson contactType="other" testattr="testval" testattr2="testval2">
@@ -195,7 +194,8 @@ XML
 XML
         );
 
-        $this->expectException(\Exception::class, 'More than one GivenName in md:ContactPerson');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('More than one GivenName in md:ContactPerson');
 
         $contactPerson = new ContactPerson($document->getElementsByTagName('ContactPerson')->item(0));
     }
@@ -204,11 +204,10 @@ XML
     /**
      * @return void
      */
-    public function testEmptySurNameXML() : void
+    public function testEmptySurNameXML(): void
     {
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <?xml version="1.0"?>
 <md:Test xmlns:md="{$mdNamespace}" xmlns:test="urn:test" Binding="urn:something" Location="https://whatever/" test:attr="value">
     <md:ContactPerson contactType="other">
@@ -231,11 +230,10 @@ XML
     /**
      * @return void
      */
-    public function testMissingContactTypeXML() : void
+    public function testMissingContactTypeXML(): void
     {
         $mdNamespace = Constants::NS_MD;
-        $document = DOMDocumentFactory::fromString(
-<<<XML
+        $document = DOMDocumentFactory::fromString(<<<XML
 <?xml version="1.0"?>
 <md:Test xmlns:md="{$mdNamespace}" xmlns:test="urn:test" Binding="urn:something" Location="https://whatever/" test:attr="value">
     <md:ContactPerson>
@@ -244,7 +242,8 @@ XML
 XML
         );
 
-        $this->expectException(\Exception::class, 'Missing contactType on ContactPerson.');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing contactType on ContactPerson.');
 
         $contactPerson = new ContactPerson($document->getElementsByTagName('ContactPerson')->item(0));
     }

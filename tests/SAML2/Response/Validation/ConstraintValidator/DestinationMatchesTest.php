@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SAML2\Response\Validation\ConstraintValidator;
 
+use PHPUnit\Framework\Attributes\Test;
 use SAML2\Configuration\Destination;
 use SAML2\Response\Validation\Result;
 use SAML2\Response\Validation\ConstraintValidator\DestinationMatches;
@@ -17,20 +18,20 @@ class DestinationMatchesTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
 
     /**
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
+        parent::setUp();
+
         $this->response = \Mockery::mock('SAML2\Response');
     }
 
 
     /**
      * @group response-validation
-     * @test
-     * @return void
      */
-    public function a_response_is_valid_when_the_destinations_match() : void
+    #[Test]
+    public function responseIsValidWhenTheDestinationsMatch(): void
     {
         $expectedDestination = new Destination('VALID DESTINATION');
         $this->response->shouldReceive('getDestination')->once()->andReturn('VALID DESTINATION');
@@ -45,10 +46,9 @@ class DestinationMatchesTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group response-validation
-     * @test
-     * @return void
      */
-    public function a_response_is_not_valid_when_the_destinations_are_not_equal() : void
+    #[Test]
+    public function responseIsNotValidWhenTheDestinationsAreNotEqual(): void
     {
         $this->response->shouldReceive('getDestination')->once()->andReturn('FOO');
         $validator = new DestinationMatches(

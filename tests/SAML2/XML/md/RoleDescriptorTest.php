@@ -15,7 +15,7 @@ class RoleDescriptorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         $roleDescriptor = new RoleDescriptorMock();
         $roleDescriptor->setID('SomeID');
@@ -33,6 +33,7 @@ class RoleDescriptorTest extends \PHPUnit\Framework\TestCase
         $document = DOMDocumentFactory::fromString('<root />');
         $roleDescriptorElement = $roleDescriptor->toXML($document->firstChild);
 
+        /** @var \DOMElement[] $roleDescriptorElement */
         $roleDescriptorElement = Utils::xpQuery($roleDescriptorElement, '/root/md:RoleDescriptor');
         $this->assertCount(1, $roleDescriptorElement);
         $roleDescriptorElement = $roleDescriptorElement[0];

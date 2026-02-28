@@ -6,6 +6,7 @@ namespace SAML2\Assertion;
 
 use Mockery as m;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
  * @runTestsInSeparateProcesses
@@ -24,6 +25,8 @@ class ProcessorTest extends MockeryTestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->decrypter = m::mock(Decrypter::class);
         $validator = m::mock(\SAML2\Signature\Validator::class);
         $assertionValidator = m::mock(\SAML2\Assertion\Validation\AssertionValidator::class);
@@ -44,9 +47,9 @@ class ProcessorTest extends MockeryTestCase
     }
 
     /**
-     * @test
      */
-    public function processor_correctly_encrypts_assertions(): void
+    #[Test]
+    public function processorCorrectlyEncryptsAssertions(): void
     {
         $testData = [
             [new \SAML2\Assertion()],
@@ -70,9 +73,9 @@ class ProcessorTest extends MockeryTestCase
     }
 
     /**
-     * @test
      */
-    public function unsuported_assertions_are_rejected(): void
+    #[Test]
+    public function unsuportedAssertionsAreRejected(): void
     {
         $this->expectException('\SAML2\Assertion\Exception\InvalidAssertionException');
         $this->expectExceptionMessage('The assertion must be of type: EncryptedAssertion or Assertion');

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace SAML2\Certificate;
 
+use Mockery;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\Test;
 use SAML2\Utilities\Certificate;
 use SAML2\Certificate\Key;
 use SAML2\Certificate\KeyLoader;
@@ -13,40 +16,34 @@ use SAML2\Configuration\CertificateProvider;
 
 class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 {
-    /**
-     * @var \SAML2\Certificate\KeyLoader
-     */
-    private $keyLoader;
+    /** @var \SAML2\Certificate\KeyLoader */
+    private KeyLoader $keyLoader;
 
     /**
      * Known to be valid certificate string
-     *
-     * @var string
      */
-    private $certificate = "-----BEGIN CERTIFICATE-----\nMIICgTCCAeoCCQCbOlrWDdX7FTANBgkqhkiG9w0BAQUFADCBhDELMAkGA1UEBhMC\nTk8xGDAWBgNVBAgTD0FuZHJlYXMgU29sYmVyZzEMMAoGA1UEBxMDRm9vMRAwDgYD\nVQQKEwdVTklORVRUMRgwFgYDVQQDEw9mZWlkZS5lcmxhbmcubm8xITAfBgkqhkiG\n9w0BCQEWEmFuZHJlYXNAdW5pbmV0dC5ubzAeFw0wNzA2MTUxMjAxMzVaFw0wNzA4\nMTQxMjAxMzVaMIGEMQswCQYDVQQGEwJOTzEYMBYGA1UECBMPQW5kcmVhcyBTb2xi\nZXJnMQwwCgYDVQQHEwNGb28xEDAOBgNVBAoTB1VOSU5FVFQxGDAWBgNVBAMTD2Zl\naWRlLmVybGFuZy5ubzEhMB8GCSqGSIb3DQEJARYSYW5kcmVhc0B1bmluZXR0Lm5v\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDivbhR7P516x/S3BqKxupQe0LO\nNoliupiBOesCO3SHbDrl3+q9IbfnfmE04rNuMcPsIxB161TdDpIesLCn7c8aPHIS\nKOtPlAeTZSnb8QAu7aRjZq3+PbrP5uW3TcfCGPtKTytHOge/OlJbo078dVhXQ14d\n1EDwXJW1rRXuUt4C8QIDAQABMA0GCSqGSIb3DQEBBQUAA4GBACDVfp86HObqY+e8\nBUoWQ9+VMQx1ASDohBjwOsg2WykUqRXF+dLfcUH9dWR63CtZIKFDbStNomPnQz7n\nbK+onygwBspVEbnHuUihZq3ZUdmumQqCw4Uvs/1Uvq3orOo/WJVhTyvLgFVK2Qar\nQ4/67OZfHd7R+POBXhophSMv1ZOo\n-----END CERTIFICATE-----\n";
+    private string $certificate = "-----BEGIN CERTIFICATE-----\nMIICgTCCAeoCCQCbOlrWDdX7FTANBgkqhkiG9w0BAQUFADCBhDELMAkGA1UEBhMC\nTk8xGDAWBgNVBAgTD0FuZHJlYXMgU29sYmVyZzEMMAoGA1UEBxMDRm9vMRAwDgYD\nVQQKEwdVTklORVRUMRgwFgYDVQQDEw9mZWlkZS5lcmxhbmcubm8xITAfBgkqhkiG\n9w0BCQEWEmFuZHJlYXNAdW5pbmV0dC5ubzAeFw0wNzA2MTUxMjAxMzVaFw0wNzA4\nMTQxMjAxMzVaMIGEMQswCQYDVQQGEwJOTzEYMBYGA1UECBMPQW5kcmVhcyBTb2xi\nZXJnMQwwCgYDVQQHEwNGb28xEDAOBgNVBAoTB1VOSU5FVFQxGDAWBgNVBAMTD2Zl\naWRlLmVybGFuZy5ubzEhMB8GCSqGSIb3DQEJARYSYW5kcmVhc0B1bmluZXR0Lm5v\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDivbhR7P516x/S3BqKxupQe0LO\nNoliupiBOesCO3SHbDrl3+q9IbfnfmE04rNuMcPsIxB161TdDpIesLCn7c8aPHIS\nKOtPlAeTZSnb8QAu7aRjZq3+PbrP5uW3TcfCGPtKTytHOge/OlJbo078dVhXQ14d\n1EDwXJW1rRXuUt4C8QIDAQABMA0GCSqGSIb3DQEBBQUAA4GBACDVfp86HObqY+e8\nBUoWQ9+VMQx1ASDohBjwOsg2WykUqRXF+dLfcUH9dWR63CtZIKFDbStNomPnQz7n\nbK+onygwBspVEbnHuUihZq3ZUdmumQqCw4Uvs/1Uvq3orOo/WJVhTyvLgFVK2Qar\nQ4/67OZfHd7R+POBXhophSMv1ZOo\n-----END CERTIFICATE-----\n";
+
+    /** @var \Mockery\MockInterface&\SAML2\Configuration\CertificateProvider */
+    private MockInterface&CertificateProvider $configurationMock;
+
 
     /**
-     * @var \Mockery\MockInterface
      */
-    private $configurationMock;
-
-
-    /*
-     * @return void
-     */
-    public function setUp() : void
+    public function setUp(): void
     {
+        parent::setUp();
+
         $this->keyLoader = new KeyLoader();
-        $this->configurationMock = \Mockery::mock(CertificateProvider::class);
+        $this->configurationMock = Mockery::mock(CertificateProvider::class);
     }
 
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function load_keys_checks_for_usage_of_key() : void
+    #[Test]
+    public function loadKeysChecksForUsageOfKey(): void
     {
         $signing = [Key::USAGE_SIGNING => true];
         $encryption = [Key::USAGE_ENCRYPTION => true];
@@ -63,10 +60,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function load_keys_constructs_x509_certificate() : void
+    #[Test]
+    public function loadKeysConstructsX509Certificate(): void
     {
         $keys = [[
             'X509Certificate' => $this->certificate
@@ -82,10 +78,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function certificate_data_is_loaded_as_key() : void
+    #[Test]
+    public function certificateDataIsLoadedAsKey(): void
     {
         $this->keyLoader->loadCertificateData($this->certificate);
 
@@ -101,10 +96,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function loading_a_file_with_the_wrong_format_throws_an_exception() : void
+    #[Test]
+    public function loadingFileWithTheWrongFormatThrowsAnException(): void
     {
         $filePath = dirname(__FILE__) . '/File/';
         $this->expectException(InvalidCertificateStructureException::class);
@@ -114,10 +108,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function loading_a_certificate_from_file_creates_a_key() : void
+    #[Test]
+    public function loadingCertificateFromFileCreatesKey(): void
     {
         $file = dirname(__FILE__) . '/File/example.org.crt';
         $this->keyLoader->loadCertificateFile($file);
@@ -136,10 +129,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function loading_a_required_certificate_from_an_empty_configuration_throws_an_exception() : void
+    #[Test]
+    public function loadingRequiredCertificatefromAnemptyConfigurationThrowsAnException(): void
     {
         $this->configurationMock
             ->shouldReceive('getKeys')
@@ -159,10 +151,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function loading_a_certificate_file_from_configuration_creates_key() : void
+    #[Test]
+    public function loadingCertificateFileFromConfigurationCreatesKey(): void
     {
         $file = dirname(__FILE__) . '/File/example.org.crt';
         $this->configurationMock
@@ -186,10 +177,9 @@ class KeyLoaderTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group certificate
-     * @test
-     * @return void
      */
-    public function loading_an_invalid_certificate_file_from_configuration_throws_exception() : void
+    #[Test]
+    public function loadingAnInvalidCertificateFileFromConfigurationThrowsException(): void
     {
         $file = dirname(__FILE__) . '/File/not_a_key.crt';
         $this->configurationMock

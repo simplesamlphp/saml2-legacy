@@ -10,12 +10,12 @@ use SAML2\AuthnRequest;
 use SAML2\DOMDocumentFactory;
 use SAML2\Utils;
 
-class ArtifactResponseTest extends \PHPUnit\Framework\TestCase
+class MyArtifactResponseTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @return void
      */
-    public function testMarshalling() : void
+    public function testMarshalling(): void
     {
         $issuer1 = new Issuer();
         $issuer2 = new Issuer();
@@ -45,7 +45,7 @@ class ArtifactResponseTest extends \PHPUnit\Framework\TestCase
     /**
      * @return void
      */
-    public function testUnmarshalling() : void
+    public function testUnmarshalling(): void
     {
         $xml = <<<XML
 <samlp:ArtifactResponse

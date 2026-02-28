@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace SAML2\Assertion\Validation\ConstraintValidator;
 
+use Mockery;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\Test;
 use SAML2\Assertion;
 use SAML2\Assertion\Validation\ConstraintValidator\NotBefore;
 use SAML2\Assertion\Validation\Result;
-use Test\SAML2\ControlledTimeTest;
+use Test\SAML2\ControlledTimeTestCase;
 
 /**
  * Because we're mocking a static call, we have to run it in separate processes so as to no contaminate the other
@@ -15,35 +18,27 @@ use Test\SAML2\ControlledTimeTest;
  *
  * @runTestsInSeparateProcesses
  */
-class NotBeforeTest extends ControlledTimeTest
+class NotBeforeTest extends ControlledTimeTestCase
 {
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $assertion;
+    private MockInterface&Assertion $assertion;
 
-    /**
-     * @var int
-     */
-    protected $currentTime = 1;
+    protected int $currentTime = 1;
 
 
     /**
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
-        $this->assertion = \Mockery::mock(Assertion::class);
+        $this->assertion = Mockery::mock(Assertion::class);
     }
 
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function timestamp_in_the_future_beyond_graceperiod_is_not_valid() : void
+    #[Test]
+    public function timestampInTheFutureBeyondGraceperiodIsNotValid(): void
     {
         $this->assertion->shouldReceive('getNotBefore')->andReturn($this->currentTime + 61);
 
@@ -59,10 +54,9 @@ class NotBeforeTest extends ControlledTimeTest
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function time_within_graceperiod_is_valid() : void
+    #[Test]
+    public function timeWithinGraceperiodIsValid(): void
     {
         $this->assertion->shouldReceive('getNotBefore')->andReturn($this->currentTime + 60);
 
@@ -77,10 +71,9 @@ class NotBeforeTest extends ControlledTimeTest
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function current_time_is_valid() : void
+    #[Test]
+    public function currentTimeIsValid(): void
     {
         $this->assertion->shouldReceive('getNotBefore')->andReturn($this->currentTime);
 

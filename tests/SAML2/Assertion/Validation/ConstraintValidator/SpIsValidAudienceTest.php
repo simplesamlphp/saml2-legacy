@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace SAML2\Assertion\Validation\ConstraintValidator;
 
+use Mockery;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\Test;
+use SAML2\Assertion;
 use SAML2\Assertion\Validation\ConstraintValidator\SpIsValidAudience;
 use SAML2\Assertion\Validation\Result;
+use SAML2\Configuration\ServiceProvider;
 
 /**
  * Because we're mocking a static call, we have to run it in separate processes so as to no contaminate the other
@@ -13,34 +18,26 @@ use SAML2\Assertion\Validation\Result;
  */
 class SpIsValidAudienceTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 {
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $assertion;
+    private MockInterface&Assertion $assertion;
 
-    /**
-     * @var \Mockery\MockInterface
-     */
-    private $serviceProvider;
+    private MockInterface&ServiceProvider $serviceProvider;
 
 
     /**
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
-        $this->assertion = \Mockery::mock(\SAML2\Assertion::class);
-        $this->serviceProvider = \Mockery::mock(\SAML2\Configuration\ServiceProvider::class);
+        $this->assertion = Mockery::mock(Assertion::class);
+        $this->serviceProvider = Mockery::mock(ServiceProvider::class);
     }
 
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function when_no_valid_audiences_are_given_the_assertion_is_valid() : void
+    #[Test]
+    public function whenNoValidAudiencesAreGivenTheAssertionIsValid(): void
     {
         $this->assertion->shouldReceive('getValidAudiences')->andReturn(null);
         $this->serviceProvider->shouldReceive('getEntityId')->andReturn('entityId');
@@ -57,10 +54,9 @@ class SpIsValidAudienceTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function if_the_sp_entity_id_is_not_in_the_valid_audiences_the_assertion_is_invalid() : void
+    #[Test]
+    public function ifTheSpEntityIdIsNotInTheValidAudiencesTheAssertionIsInvalid(): void
     {
         $this->assertion->shouldReceive('getValidAudiences')->andReturn(['someEntityId']);
         $this->serviceProvider->shouldReceive('getEntityId')->andReturn('anotherEntityId');
@@ -78,10 +74,9 @@ class SpIsValidAudienceTest extends \Mockery\Adapter\Phpunit\MockeryTestCase
 
     /**
      * @group assertion-validation
-     * @test
-     * @return void
      */
-    public function the_assertion_is_valid_when_the_current_sp_entity_id_is_a_valid_audience() : void
+    #[Test]
+    public function theAssertionIsValidWhenTheCurrentSpEntityIdIsValidAudience(): void
     {
         $this->assertion->shouldReceive('getValidAudiences')->andReturn(['foo', 'bar', 'validEntityId', 'baz']);
         $this->serviceProvider->shouldReceive('getEntityId')->andReturn('validEntityId');
