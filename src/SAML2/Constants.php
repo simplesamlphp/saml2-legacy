@@ -42,11 +42,6 @@ class Constants
     public const PROFILE_SUBJECT_ID_REQ = 'urn:oasis:names:tc:SAML:profiles:subject-id:req';
 
     /**
-     * Subject signal attribute
-     */
-    const PROFILE_SUBJECT_ID_REQ = 'urn:oasis:names:tc:SAML:profiles:subject-id:req';
-
-    /**
      * The URN for the HTTP-POST binding.
      */
     public const BINDING_HTTP_POST = 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST';
@@ -246,11 +241,6 @@ class Constants
      * The namespace for the IDP Discovery protocol.
      */
     public const NS_IDPDISC = 'urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol';
-
-    /**
-     * The namespace for the IDP Discovery protocol.
-     */
-    const NS_IDPDISC = 'urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol';
 
     /**
      * The namespace for the SOAP protocol.
