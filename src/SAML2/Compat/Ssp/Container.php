@@ -112,11 +112,7 @@ class Container extends AbstractContainer
     /**
      * {@inheritdoc}
      */
-<<<<<<< HEAD
-    public function writeFile(string $filename, string $data, ?int $mode = null) : void
-=======
     public function writeFile(string $filename, string $data, ?int $mode = null): void
->>>>>>> upstream/release-4.x
     {
         if ($mode === null) {
             $mode = 0600;
