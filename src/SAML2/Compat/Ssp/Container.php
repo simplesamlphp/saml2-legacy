@@ -119,4 +119,15 @@ class Container extends AbstractContainer
         }
         $this->utilsSystem->writeFile($filename, $data, $mode);
     }
+
+
+    /**
+     * {@inheritdoc}
+     *
+     * Matches the limit of SimpleSAMLphp's own container (SimpleSAML\Compat\SspContainer).
+     */
+    public function getInflateSizeLimit(): int
+    {
+        return 100 * 1024;
+    }
 }
