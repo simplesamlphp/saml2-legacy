@@ -80,5 +80,8 @@ abstract class AbstractContainer
      *
      * @return int max bytes to decode before considering the message an attack
      */
-    abstract public function getInflateSizeLimit(): int;
+    public function getInflateSizeLimit(): int
+    {
+        return 100 * 1024;
+    }
 }
